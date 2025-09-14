@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String            @id @default(uuid())
+  email              String            @unique
+  password           String
+  name               String
+  role               Role
+
+  profileUrl         String?
+  location           String?
+  bio                String?
+  linkedinUrl        String?
+  twitterUrl         String?
+  personalWebsite    String?
+  companyName        String?
+  industry           String?
+
+  createdAt          DateTime         @default(now())
+  deals              Deal[]
+  interests          Interest[]       @relation("InvestorInterest")
+
+  founderNotification     Notification[]      @relation("founderNotification")
+  investorNotification    Notification[]      @relation("investorNotification")
+}
+
+enum Role {
+  Investor
+  Founder
+}
+
+model Deal {
+  id                String            @id @default(uuid())
+  userId            String            
+  user              User              @relation(fields: [userId], references: [id])
+  sector            String            
+  companyAge        Int               @default(0)
+  description       String            
+  TTMRevenue        Int
+  AskPrice          Int
+  customers         Int               @default(0)
+  interests         Interest[]
+}
+
+model Interest {
+  id                String              @id @default(uuid())
+  investorId        String
+  investor          User                @relation("InvestorInterest", fields: [investorId], references: [id], onDelete: Cascade) 
+  dealId            String
+  deal              Deal                @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  investorMessage   String
+  status            InterestStatus      @default(Pending)
+  slots             Slot[]
+  
+  // Active deal
+  dealStatus        String?
+  dealPartner       String?
+  lastActivity      String?
+}
+enum InterestStatus {
+  Pending
+  Active
+}
+
+model Slot {
+  id                String              @id @default(uuid())
+  startTime         DateTime
+  endTime           DateTime
+  interestId        String
+  interest          Interest            @relation(fields: [interestId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id                String              @id @default(uuid())
+  createdAt         DateTime            @default(now())
+  founderId         String
+  founder           User                @relation("founderNotification", fields: [founderId], references: [id])
+  investorId        String        
+  investor          User                @relation("investorNotification", fields: [investorId], references: [id])
+  message           String
+}
