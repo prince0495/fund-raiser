@@ -16,6 +16,7 @@ export type slotType = {
 
 import axios from 'axios';
 import Link from 'next/link';
+import { Loader2 } from 'lucide-react';
 
 const SearchIcon = () => (
     <svg 
@@ -129,6 +130,7 @@ const DealDetailModal = ({ deal, onClose, userId }: { deal: Deal | null; onClose
     const [reason, setReason] = useState('');
     const [selectedSlots, setSelectedSlots] = useState<Date[]>([]);
     const [slotDuration, setSlotDuration] = useState<number>(30); 
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
     useEffect(() => {
         if (deal) {
             setViewMode('details');
@@ -175,7 +177,7 @@ const DealDetailModal = ({ deal, onClose, userId }: { deal: Deal | null; onClose
     };
     const handleSubmitInterest = async(e: React.FormEvent) => {
         e.preventDefault();
-
+        setIsSubmitting(true)
         const interestPayload: interestPayloadType = {
             dealId: deal.id,
             investorMessage: reason,
@@ -199,6 +201,7 @@ const DealDetailModal = ({ deal, onClose, userId }: { deal: Deal | null; onClose
             console.log('interest created');
         }
         console.log(res.data?.msg);
+        setIsSubmitting(false)
         onClose();
     };
 
@@ -300,10 +303,18 @@ const DealDetailModal = ({ deal, onClose, userId }: { deal: Deal | null; onClose
                             </div>
 
                             <div className="mt-6 border-t pt-4">
-                                <button type="submit" disabled={selectedSlots.length !== 2 || !reason}
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className="h-5 w-5 animate-spin" />
+                                        Submitting...
+                                    </>
+                                ) : 
+                                (<button type="submit" disabled={selectedSlots.length !== 2 || !reason
+                                    
+                                }
                                     className="w-full py-2.5 px-4 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors">
                                     Submit Interest
-                                </button>
+                                </button>)}
                             </div>
                         </form>
                     )}
